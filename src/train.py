@@ -1,12 +1,11 @@
 from pathlib import Path
 
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.utils.data import DataLoader
 
 from dataset import EEGDataset
 from model import EEGClassifier
-
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUTS = ROOT / "outputs"
@@ -216,7 +215,7 @@ for epoch in range(EPOCHS):
                     "LPD": 5,
                 },
             },
-            MODEL_DIR / "fusion_best.pt",
+            MODEL_DIR / "fusion_residual_attention_best.pt",
         )
 
         print(f"Saved new best model ({best_val_accuracy:.4f})")

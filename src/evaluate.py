@@ -1,16 +1,15 @@
 from pathlib import Path
 
 import torch
-from torch.utils.data import DataLoader
 from sklearn.metrics import classification_report, confusion_matrix
+from torch.utils.data import DataLoader
 
 from dataset import EEGDataset
 from model import EEGClassifier
 
-
 ROOT = Path(__file__).resolve().parent.parent
 
-MODEL_PATH = ROOT / "models" / "fusion_model.pt"
+MODEL_PATH = ROOT / "models" / "fusion_residual_attention_best.pt"
 
 
 LABELS = [
