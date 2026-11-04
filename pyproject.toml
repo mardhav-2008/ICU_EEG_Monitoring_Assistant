@@ -19,6 +19,7 @@ dependencies = [
 
 [project.scripts]
 icu-eeg-monitoring-assistant = "icu_eeg_monitoring_assistant:main"
+evaluate = "src/evaluate.py"
 
 [build-system]
 requires = ["uv_build>=0.12.21,<0.13.0"]
