@@ -1,16 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
-from PySide6.QtCore import Qt, Slot, QUrl
-from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget,
-    QLabel, QPushButton, QFrame, QSizePolicy
-)
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWebChannel import QWebChannel
-from PySide6.QtWebEngineCore import QWebEngineSettings
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
-from gui.core.bridge import BackendBridge
 from gui.pages.onboarding import OnboardingPage
 from gui.pages.body_selection import BodySelectionPage
 from gui.pages.eeg_dashboard import EEGDashboardPage
@@ -26,7 +18,6 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1080, 700)
         self.setStyleSheet(APP_QSS)
 
-        self.bridge = BackendBridge()
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
@@ -50,7 +41,6 @@ class MainWindow(QMainWindow):
 
     @Slot(str, int, str)
     def _on_onboarding_complete(self, sex: str, age: int, patient_id: str):
-        self.bridge.configure_patient(sex, age, patient_id)
         self.body_page.set_patient(sex, age, patient_id)
         self.stack.setCurrentWidget(self.body_page)
 
