@@ -1,0 +1,8 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #07131a; color: #a8e7df; font-family: Inter, "Noto Sans", sans-serif; }
+#stage { position: absolute; inset: 0; }
+canvas { display: block; width: 100%; height: 100%; outline: none; }
+.hud { position: absolute; z-index: 2; left: 18px; right: 18px; display: flex; justify-content: space-between; color: #5daea8; font-size: 9px; letter-spacing: 2px; pointer-events: none; }
+.hud-top { top: 16px; }
+.hud-bottom { bottom: 14px; color: #7fc9c0; }
+.scanline { position: absolute; inset: 0; pointer-events: none; opacity: .12; background: repeating-linear-gradient(to bottom, transparent 0 3px, #79f5df 4px, transparent 5px); mix-blend-mode: screen; }

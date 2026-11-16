@@ -1,38 +1,82 @@
-cat > .gitignore <<'EOF'
+
+# ==========================================
 # Python
+# ==========================================
 __pycache__/
 *.py[cod]
+*.pyd
 *.so
+*.egg
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
+# ==========================================
 # Virtual environments
+# ==========================================
 .venv/
 venv/
 env/
 
+# ==========================================
 # Jupyter
+# ==========================================
 .ipynb_checkpoints/
 
-# Data
+# ==========================================
+# Data (potentially sensitive / large)
+# ==========================================
 data/raw/
 data/processed/
 
+# ==========================================
 # Generated outputs
+# ==========================================
 outputs/
+*.log
 
-# Model checkpoints
+# ==========================================
+# Model checkpoints and serialized models
+# ==========================================
 models/*.pt
 models/*.pth
 models/*.ckpt
 models/*.joblib
+models/*.pkl
 
-# OS
-.DS_Store
-Thumbs.db
+# ==========================================
+# GUI / generated assets
+# ==========================================
+src/gui/__pycache__/
+src/gui/web/node_modules/
+src/gui/web/dist/
 
+# ==========================================
+# Build artifacts
+# ==========================================
+build/
+dist/
+*.spec
+
+# ==========================================
 # IDEs
+# ==========================================
 .vscode/
 .idea/
 
-# Logs
-*.log
-EOF
+# ==========================================
+# OS
+# ==========================================
+.DS_Store
+Thumbs.db
+*~
+
+# ==========================================
+# Environment variables / secrets
+# ==========================================
+.env
+.env.*
+!.env.example

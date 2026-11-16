@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Neural Interface — Body Map</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="hud hud-top"><span>NEURAL INTERFACE</span><span>ANATOMICAL SCAN / 3D</span></div>
+  <div id="stage"></div>
+  <div class="scanline"></div>
+  <div class="hud hud-bottom"><span id="hint">INITIALIZING 3D ENVIRONMENT...</span><span>DRAG TO ROTATE · CLICK TO SELECT</span></div>
+  <script type="module" src="./src/body.js"></script>
+</body>
+</html>

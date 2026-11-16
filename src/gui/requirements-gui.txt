@@ -1,0 +1,4 @@
+PySide6
+PySide6-Addons
+pyqtgraph
+numpy
