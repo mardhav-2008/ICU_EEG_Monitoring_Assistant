@@ -23,6 +23,7 @@ outputs/
 models/*.pt
 models/*.pth
 models/*.ckpt
+models/*.joblib
 
 # OS
 .DS_Store

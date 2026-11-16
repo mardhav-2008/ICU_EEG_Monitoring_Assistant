@@ -13,13 +13,13 @@ dependencies = [
     "pandas>=3.1.0",
     "pyarrow>=26.0.0",
     "scikit-learn>=1.9.1",
+    "scipy>=1.18.1",
     "torch>=2.14.1",
     "torchvision>=0.29.1",
 ]
 
 [project.scripts]
 icu-eeg-monitoring-assistant = "icu_eeg_monitoring_assistant:main"
-evaluate = "src/evaluate.py"
 
 [build-system]
 requires = ["uv_build>=0.12.21,<0.13.0"]
