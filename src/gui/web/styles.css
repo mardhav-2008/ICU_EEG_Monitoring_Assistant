@@ -1,8 +1,76 @@
 * { box-sizing: border-box; }
-html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #07131a; color: #a8e7df; font-family: Inter, "Noto Sans", sans-serif; }
-#stage { position: absolute; inset: 0; }
-canvas { display: block; width: 100%; height: 100%; outline: none; }
-.hud { position: absolute; z-index: 2; left: 18px; right: 18px; display: flex; justify-content: space-between; color: #5daea8; font-size: 9px; letter-spacing: 2px; pointer-events: none; }
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    color: #d9ebe1;
+    font-family: Inter, "Noto Sans", sans-serif;
+    background:
+        radial-gradient(ellipse at 50% 35%, rgba(76, 119, 105, .20), transparent 48%),
+        radial-gradient(ellipse at 82% 82%, rgba(119, 105, 75, .12), transparent 38%),
+        linear-gradient(135deg, #0c171b 0%, #101d20 48%, #080f13 100%);
+}
+
+#stage {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 50% 48%, rgba(91, 139, 119, .13), transparent 42%),
+        linear-gradient(145deg, rgba(24, 44, 45, .38), rgba(5, 14, 19, .72));
+}
+
+#stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+        linear-gradient(120deg, rgba(221, 246, 228, .055), transparent 27%, transparent 72%, rgba(166, 203, 180, .035)),
+        radial-gradient(ellipse at 50% 0%, rgba(195, 226, 203, .07), transparent 54%);
+    border: 1px solid rgba(189, 222, 201, .12);
+}
+
+canvas {
+    position: relative;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+.hud {
+    position: absolute;
+    z-index: 2;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    justify-content: space-between;
+    color: rgba(183, 218, 193, .72);
+    font-size: 9px;
+    font-weight: 650;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, .65);
+}
 .hud-top { top: 16px; }
-.hud-bottom { bottom: 14px; color: #7fc9c0; }
-.scanline { position: absolute; inset: 0; pointer-events: none; opacity: .12; background: repeating-linear-gradient(to bottom, transparent 0 3px, #79f5df 4px, transparent 5px); mix-blend-mode: screen; }
+.hud-bottom { bottom: 14px; color: rgba(177, 211, 187, .62); }
+
+.scanline {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: .045;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0 4px,
+        rgba(190, 230, 202, .6) 5px,
+        transparent 6px
+    );
+    mix-blend-mode: screen;
+}

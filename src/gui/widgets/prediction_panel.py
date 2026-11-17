@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import (
-    QFrame, QVBoxLayout, QHBoxLayout, QLabel, QProgressBar
-)
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QProgressBar
 
 
 class PredictionPanel(QFrame):
@@ -10,8 +8,10 @@ class PredictionPanel(QFrame):
         super().__init__()
         self.setObjectName("panel")
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 16, 18, 14)
+        layout.setSpacing(9)
 
-        heading = QLabel("MODEL OUTPUT")
+        heading = QLabel("MODEL INTERPRETATION")
         heading.setObjectName("fieldLabel")
         layout.addWidget(heading)
 
@@ -19,19 +19,17 @@ class PredictionPanel(QFrame):
         self.result.setObjectName("prediction")
         layout.addWidget(self.result)
 
-        self.confidence = QLabel("Confidence: —")
+        self.confidence = QLabel("Model confidence: —")
         self.confidence.setObjectName("muted")
         layout.addWidget(self.confidence)
-
         self.uncertainty = QLabel("Uncertainty: —")
         self.uncertainty.setObjectName("muted")
         layout.addWidget(self.uncertainty)
-
-        self.attention = QLabel("Attention: —")
+        self.attention = QLabel("Attention assessment: —")
         self.attention.setObjectName("muted")
         layout.addWidget(self.attention)
 
-        self.interpretation = QLabel("Select an EEG and spectrogram recording to run inference.")
+        self.interpretation = QLabel("Select an EEG and corresponding spectrogram recording.")
         self.interpretation.setWordWrap(True)
         self.interpretation.setObjectName("muted")
         layout.addWidget(self.interpretation)
@@ -44,7 +42,7 @@ class PredictionPanel(QFrame):
         for label in ("Seizure", "GPD", "LRDA", "Other", "GRDA", "LPD"):
             row = QHBoxLayout()
             name = QLabel(label)
-            name.setMinimumWidth(70)
+            name.setMinimumWidth(66)
             bar = QProgressBar()
             bar.setRange(0, 1000)
             bar.setValue(0)
@@ -79,7 +77,7 @@ class PredictionPanel(QFrame):
         label = result["prediction"]
         confidence = float(result["confidence"])
         self.result.setText(label.upper())
-        self.confidence.setText(f"Confidence: {confidence:.1%}")
+        self.confidence.setText(f"Model confidence: {confidence:.1%}")
         self.uncertainty.setText(f"Uncertainty: {result['uncertainty']}")
         self.attention.setText(f"Attention assessment: {result['attention']}")
         self.interpretation.setText(result["interpretation"])
