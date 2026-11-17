@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from PySide6.QtCore import Signal, QUrl
+from PySide6.QtCore import Qt, Signal, QUrl
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame
 )
@@ -12,6 +12,7 @@ from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineCore import QWebEngineSettings
 
 from gui.core.bridge import BackendBridge
+from gui.widgets.motion import PulseDot, Segmented, fade_in
 
 
 class BodySelectionPage(QWidget):
@@ -21,6 +22,8 @@ class BodySelectionPage(QWidget):
 
     def __init__(self):
         super().__init__()
+        # Holds a web view: page transitions slide it but never fade it.
+        self.setProperty("noFade", True)
         self.sex = "male"
         self.age = None
         self.patient_id = ""
@@ -30,49 +33,34 @@ class BodySelectionPage(QWidget):
         layout.setSpacing(12)
 
         header = QHBoxLayout()
+        header.setSpacing(12)
         titlebox = QVBoxLayout()
+        titlebox.setSpacing(4)
 
-        eyebrow = QLabel("NEURAL INTERFACE  /  BODY MAP")
-        eyebrow.setObjectName("eyebrow")
         title = QLabel("Select monitoring region")
         title.setObjectName("sectionTitle")
+        self.header_meta = QLabel("No patient profile configured")
+        self.header_meta.setObjectName("muted")
 
-        titlebox.addWidget(eyebrow)
         titlebox.addWidget(title)
+        titlebox.addWidget(self.header_meta)
         header.addLayout(titlebox)
         header.addStretch()
 
-        self.sex_label = QLabel("MALE PROFILE")
-        self.sex_label.setObjectName("statusPill")
-        header.addWidget(self.sex_label)
+        # Plain captions name each toggle group, so nothing that is only
+        # information is drawn like a button.
+        header.addWidget(self._small("Profile"))
+        self.profile_toggle = Segmented([("male", "Male"), ("female", "Female")])
+        self.profile_toggle.changed.connect(self._change_profile)
+        header.addWidget(self.profile_toggle)
+        header.addSpacing(14)
 
-        self.male_button = QPushButton("Male")
-        self.male_button.setCheckable(True)
-        self.male_button.clicked.connect(lambda: self._change_profile("male"))
-
-        self.female_button = QPushButton("Female")
-        self.female_button.setCheckable(True)
-        self.female_button.clicked.connect(lambda: self._change_profile("female"))
-
-        self.profile_group = [self.male_button, self.female_button]
-        header.addWidget(self.male_button)
-        header.addWidget(self.female_button)
-
-        self.stylized_button = QPushButton("Stylized anatomy")
-        self.stylized_button.setCheckable(True)
-        self.stylized_button.clicked.connect(
-            lambda: self._set_style("stylized")
+        header.addWidget(self._small("View"))
+        self.style_toggle = Segmented(
+            [("hologram", "Hologram"), ("stylized", "Stylized anatomy")]
         )
-
-        self.holo_button = QPushButton("Hologram")
-        self.holo_button.setCheckable(True)
-        self.holo_button.setChecked(True)
-        self.holo_button.clicked.connect(
-            lambda: self._set_style("hologram")
-        )
-
-        header.addWidget(self.stylized_button)
-        header.addWidget(self.holo_button)
+        self.style_toggle.changed.connect(self._set_style)
+        header.addWidget(self.style_toggle)
         layout.addLayout(header)
 
         content = QHBoxLayout()
@@ -118,13 +106,13 @@ class BodySelectionPage(QWidget):
         side_layout.setContentsMargins(22, 22, 22, 22)
         side_layout.setSpacing(14)
 
-        side_layout.addWidget(self._small("PATIENT PROFILE"))
+        side_layout.addWidget(self._small("Patient profile"))
         self.patient_summary = QLabel("No patient profile configured.")
         self.patient_summary.setWordWrap(True)
         self.patient_summary.setObjectName("muted")
         side_layout.addWidget(self.patient_summary)
 
-        side_layout.addWidget(self._small("ANATOMICAL OVERVIEW"))
+        side_layout.addWidget(self._small("Anatomical overview"))
         info = QLabel(
             "Choose the brain to open the EEG monitoring workspace. "
             "Other regions are reserved for future modules."
@@ -133,27 +121,34 @@ class BodySelectionPage(QWidget):
         info.setObjectName("muted")
         side_layout.addWidget(info)
 
-        self.selection = QLabel("NO REGION SELECTED")
+        self.selection = QLabel("No region selected")
         self.selection.setObjectName("selectionCard")
         side_layout.addWidget(self.selection)
 
         brain = QPushButton("Open brain monitoring  →")
         brain.setObjectName("primary")
+        brain.setCursor(Qt.CursorShape.PointingHandCursor)
         brain.clicked.connect(self.open_dashboard.emit)
         side_layout.addWidget(brain)
 
         side_layout.addStretch()
-        side_layout.addWidget(self._small("SYSTEM STATUS"))
+        side_layout.addWidget(self._small("System status"))
 
-        self.status = QLabel("●  3D ENGINE INITIALIZING")
+        status_row = QHBoxLayout()
+        status_row.setSpacing(6)
+        self.status_dot = PulseDot("#D2B77B")
+        self.status_dot.set_state("#D2B77B", active=True)
+        self.status = QLabel("3D engine initializing")
         self.status.setObjectName("statusText")
-        side_layout.addWidget(self.status)
+        status_row.addWidget(self.status_dot)
+        status_row.addWidget(self.status)
+        status_row.addStretch()
+        side_layout.addLayout(status_row)
 
         content.addWidget(side, 1)
         layout.addLayout(content, 1)
 
         self.bridge.region_selected.connect(self._region_from_scene)
-        self.male_button.setChecked(True)
 
     def _small(self, text):
         label = QLabel(text)
@@ -162,10 +157,12 @@ class BodySelectionPage(QWidget):
 
     def _on_web_loaded(self, ok: bool):
         if not ok:
-            self.status.setText("●  3D VIEW FAILED TO LOAD")
+            self.status.setText("3D view failed to load")
+            self.status_dot.set_state("#F0A18E")
             return
 
-        self.status.setText("●  3D ENGINE READY")
+        self.status.setText("3D engine ready")
+        self.status_dot.set_state("#A7C9A8")
         self._apply_profile_to_scene()
 
     def set_patient(self, sex, age, patient_id):
@@ -176,9 +173,10 @@ class BodySelectionPage(QWidget):
         self._apply_profile_to_scene()
 
     def _update_profile_ui(self):
-        self.sex_label.setText(f"{self.sex.upper()} PROFILE")
-        self.male_button.setChecked(self.sex == "male")
-        self.female_button.setChecked(self.sex == "female")
+        self.profile_toggle.set_current(self.sex)
+        self.header_meta.setText(
+            f"Session {self.patient_id}  ·  {self.age} years  ·  {self.sex.title()}"
+        )
 
         self.patient_summary.setText(
             f"Session: {self.patient_id}\n"
@@ -206,8 +204,6 @@ class BodySelectionPage(QWidget):
         self.web.page().runJavaScript(script)
 
     def _set_style(self, style):
-        self.holo_button.setChecked(style == "hologram")
-        self.stylized_button.setChecked(style == "stylized")
 
         script = (
             "if (window.setVisualStyle) {"
@@ -217,5 +213,6 @@ class BodySelectionPage(QWidget):
         self.web.page().runJavaScript(script)
 
     def _region_from_scene(self, region):
-        self.selection.setText(f"SELECTED  /  {region.upper()}")
+        self.selection.setText(f"Selected  ·  {region.replace('_', ' ').title()}")
+        fade_in(self.selection, duration=280)
         self.region_selected.emit(region)

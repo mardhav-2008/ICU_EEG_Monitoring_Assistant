@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import numpy as np
 import pyqtgraph as pg
-from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel
+from PySide6.QtCore import QEasingCurve, QVariantAnimation, Qt
+from PySide6.QtWidgets import QFrame, QLabel, QStackedLayout, QVBoxLayout, QWidget
 
 
 class SpectrogramWidget(QFrame):
@@ -12,12 +13,21 @@ class SpectrogramWidget(QFrame):
         super().__init__()
         self.setObjectName("panel")
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 14, 16, 12)
-        layout.setSpacing(8)
+        layout.setContentsMargins(20, 16, 20, 16)
+        layout.setSpacing(10)
 
-        self.title = QLabel("SPECTROGRAM  /  WAITING FOR RECORDING")
-        self.title.setObjectName("fieldLabel")
+        self.title = QLabel("Spectrogram")
+        self.title.setObjectName("panelTitle")
         layout.addWidget(self.title)
+
+        body = QWidget()
+        self._stack = QStackedLayout(body)
+
+        self.empty = QLabel("No spectrogram loaded yet.")
+        self.empty.setObjectName("emptyState")
+        self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.empty.setWordWrap(True)
+        self._stack.addWidget(self.empty)
 
         self.plot = pg.PlotWidget()
         self.plot.setBackground("#101D20")
@@ -30,16 +40,27 @@ class SpectrogramWidget(QFrame):
             axis.setPen("#53665C")
         self.plot.getPlotItem().hideButtons()
         self.plot.getPlotItem().setMenuEnabled(False)
+        self.plot.setMouseEnabled(x=False, y=False)
 
         self.image = pg.ImageItem()
         self.image.setOpts(axisOrder="row-major")
         self.plot.addItem(self.image)
         self.plot.setAspectLocked(False)
-        layout.addWidget(self.plot)
+        self._stack.addWidget(self.plot)
+        layout.addWidget(body, 1)
+
+        self._reveal = QVariantAnimation(self)
+        self._reveal.setStartValue(0.0)
+        self._reveal.setEndValue(1.0)
+        self._reveal.setDuration(600)
+        self._reveal.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._reveal.valueChanged.connect(lambda v: self.image.setOpacity(float(v)))
 
     def clear(self):
+        self._reveal.stop()
         self.image.clear()
-        self.title.setText("SPECTROGRAM  /  WAITING FOR RECORDING")
+        self.title.setText("Spectrogram")
+        self._stack.setCurrentWidget(self.empty)
 
     def set_spectrogram(self, data):
         array = np.asarray(data, dtype=np.float32)
@@ -56,7 +77,10 @@ class SpectrogramWidget(QFrame):
         height, width = image.shape
         self.plot.setXRange(0, width, padding=0)
         self.plot.setYRange(0, height, padding=0)
-        self.title.setText(f"SPECTROGRAM  /  MODEL INPUT  ·  {array.shape}")
+        self.title.setText("Spectrogram  ·  model input, mean of 4 regions")
+        self._stack.setCurrentWidget(self.plot)
+        self.image.setOpacity(0.0)
+        self._reveal.start()
 
     @staticmethod
     def _sage_lut():
