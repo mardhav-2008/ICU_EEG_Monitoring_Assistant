@@ -11,16 +11,25 @@ QWidget#centralwidget {
         stop:0 #0A1419, stop:0.48 #111D20, stop:1 #101719);
 }
 QLabel { color: #E7F0EC; background: transparent; }
+QLabel#brand { color: #DCE9E1; font-size: 14px; font-weight: 700; }
 QLabel#eyebrow, QLabel#fieldLabel {
     color: #9AB6A4;
-    font-size: 10px;
-    font-weight: 750;
-    letter-spacing: 1.7px;
+    font-size: 12px;
+    font-weight: 650;
 }
-QLabel#heroTitle { color: #F0F5F1; font-size: 40px; font-weight: 650; }
+QLabel#panelTitle { color: #E3EEE6; font-size: 14px; font-weight: 700; }
+QLabel#metricValue { color: #E7F0EC; font-size: 15px; font-weight: 700; }
+QLabel#emptyState {
+    color: #8FA29A;
+    background: rgba(4, 13, 17, 90);
+    border: 1px dashed rgba(177, 207, 190, 55);
+    border-radius: 12px;
+    padding: 18px;
+}
+QLabel#heroTitle { color: #F0F5F1; font-size: 36px; font-weight: 700; }
 QLabel#sectionTitle { color: #F0F5F1; font-size: 23px; font-weight: 700; }
 QLabel#muted, QLabel#footnote { color: #9AA9A5; }
-QLabel#footnote { font-size: 10px; letter-spacing: .5px; }
+QLabel#footnote { font-size: 11px; }
 QLabel#error { color: #F0A18E; }
 QLabel#statusPill {
     color: #C5D9C8;
@@ -41,6 +50,11 @@ QLabel#selectionCard {
     font-weight: 700;
 }
 QLabel#prediction { color: #C4E1C5; font-size: 27px; font-weight: 750; }
+QFrame#metric {
+    background: rgba(4, 13, 17, 110);
+    border: 1px solid rgba(177, 207, 190, 40);
+    border-radius: 10px;
+}
 QFrame#panel, QFrame#scenePanel {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
         stop:0 rgba(39, 57, 59, 224),
@@ -89,7 +103,39 @@ QPushButton#primary {
     font-weight: 750;
 }
 QPushButton#primary:hover { background: #9AB99A; }
-QPushButton#choice { min-width: 100px; padding: 14px; }
+QPushButton:disabled, QPushButton#primary:disabled {
+    color: rgba(220, 233, 225, 110);
+    background: rgba(60, 80, 72, 90);
+    border: 1px solid rgba(191, 216, 199, 40);
+}
+QPushButton:focus { border: 1px solid rgba(220, 242, 225, 190); }
+QPushButton#ghost {
+    background: transparent;
+    border: 1px solid rgba(191, 216, 199, 55);
+    padding: 8px 14px;
+}
+QPushButton#ghost:hover { background: rgba(136, 170, 145, 45); }
+QFrame#segmented {
+    background: rgba(4, 13, 17, 150);
+    border: 1px solid rgba(177, 207, 190, 60);
+    border-radius: 11px;
+}
+QFrame#segmentPill {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #829E82, stop:1 #58745F);
+    border: 1px solid rgba(220, 242, 220, 120);
+    border-radius: 8px;
+}
+QPushButton#segment {
+    color: #A9BDB0;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 600;
+}
+QPushButton#segment:hover { color: #E7F0EC; }
+QPushButton#segment:checked { color: #F8FCF7; background: transparent; border: none; }
 QLineEdit, QSpinBox, QDoubleSpinBox {
     color: #E9F1EC;
     background: rgba(4, 13, 17, 150);
@@ -98,6 +144,22 @@ QLineEdit, QSpinBox, QDoubleSpinBox {
     border-radius: 9px;
     padding: 10px;
     selection-background-color: #718F76;
+}
+QSpinBox, QDoubleSpinBox { padding: 0; min-height: 40px; max-height: 40px; }
+/* Arrows are hidden through zero-width subcontrols: NoButtons combined with
+   a stylesheet collapses the spin box's editor to 1px in Qt 6. */
+QAbstractSpinBox::up-button, QAbstractSpinBox::down-button {
+    width: 0px;
+    border: none;
+}
+QLineEdit { min-height: 20px; }
+/* The editor inside a spin box must not inherit the field chrome above,
+   or its padding leaves no room for the value. */
+QAbstractSpinBox QLineEdit {
+    padding: 0;
+    border: none;
+    background: transparent;
+    min-height: 0;
 }
 QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
     border: 1px solid rgba(188, 226, 192, 190);
@@ -112,9 +174,21 @@ QProgressBar {
 }
 QProgressBar::chunk {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #9DBDA0, stop:1 #69866C);
+        stop:0 #7E9A82, stop:1 #5C7861);
     border-radius: 4px;
 }
+QProgressBar[top="true"]::chunk {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #C9E6C6, stop:1 #8BA98D);
+}
+QProgressBar#busy {
+    min-height: 3px;
+    max-height: 3px;
+    border: none;
+    border-radius: 1px;
+    background: rgba(3, 12, 15, 120);
+}
+QProgressBar#busy::chunk { background: #9DBDA0; border-radius: 1px; }
 QToolTip {
     color: #F3F8F3;
     background: #1B2B2B;
