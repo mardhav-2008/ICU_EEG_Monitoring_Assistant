@@ -15,7 +15,7 @@ from model import EEGClassifier
 
 ROOT = Path(__file__).resolve().parent.parent
 
-MODEL_PATH = ROOT / "models" / "fusion_best.pt"
+MODEL_PATH = ROOT / "models" / "fusion_residual_attention_best.pt"
 
 
 LABELS = [

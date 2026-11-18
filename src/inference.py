@@ -8,7 +8,7 @@ from model import EEGClassifier
 
 
 ROOT = Path(__file__).resolve().parent.parent
-MODEL_PATH = ROOT / "models" / "fusion_best.pt"
+MODEL_PATH = ROOT / "models" / "fusion_residual_attention_best.pt"
 
 EEG_SAMPLING_RATE = 200
 EEG_WINDOW_SECONDS = 10

@@ -21,7 +21,15 @@ dependencies = [
 ]
 
 [project.scripts]
-icu-eeg-monitoring-assistant = "icu_eeg_monitoring_assistant:main"
+eeg-prepare = "icu_eeg_monitoring_assistant.cli:prepare"
+eeg-prepare-spectrograms = "icu_eeg_monitoring_assistant.cli:prepare_spectrograms"
+eeg-train = "icu_eeg_monitoring_assistant.cli:train"
+eeg-evaluate = "icu_eeg_monitoring_assistant.cli:evaluate"
+eeg-evaluate-fusion = "icu_eeg_monitoring_assistant.cli:evaluate_fusion"
+eeg-random-forest = "icu_eeg_monitoring_assistant.cli:random_forest"
+eeg-assistant = "icu_eeg_monitoring_assistant.cli:assistant"
+eeg-monitor = "icu_eeg_monitoring_assistant.cli:monitor"
+eeg-gui = "icu_eeg_monitoring_assistant.cli:gui"
 
 [build-system]
 requires = ["uv_build>=0.12.21,<0.13.0"]

@@ -21,7 +21,7 @@ class InferenceService:
     @property
     def model_path(self) -> Path:
         # src/gui/services/inference_service.py -> project root
-        return Path(__file__).resolve().parents[3] / "models" / "fusion_best.pt"
+        return Path(__file__).resolve().parents[3] / "models" / "fusion_residual_attention_best.pt"
 
     def load(self) -> None:
         if self._inference is not None:
@@ -30,7 +30,7 @@ class InferenceService:
         if not self.model_path.is_file():
             raise FileNotFoundError(
                 f"Model checkpoint not found: {self.model_path}\n"
-                "Place fusion_best.pt in the project's models/ directory. "
+                "Place fusion_residual_attention_best.pt in the project's models/ directory. "
                 "The checkpoint is intentionally excluded from Git."
             )
 

@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from icu-eeg-monitoring-assistant!")
+"""ICU EEG Monitoring Assistant CLI."""
