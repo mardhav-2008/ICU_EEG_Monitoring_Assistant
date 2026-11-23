@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QMainWindow, QStackedWidget
+from PySide6.QtWidgets import QMainWindow
 
 from gui.pages.onboarding import OnboardingPage
 from gui.pages.body_selection import BodySelectionPage
 from gui.pages.eeg_dashboard import EEGDashboardPage
 from gui.pages.coming_soon import ComingSoonPage
 from gui.styles.theme import APP_QSS
+from gui.widgets.motion import AnimatedStack
 
 
 class MainWindow(QMainWindow):
@@ -18,7 +19,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1080, 700)
         self.setStyleSheet(APP_QSS)
 
-        self.stack = QStackedWidget()
+        self.stack = AnimatedStack()
         self.setCentralWidget(self.stack)
 
         self.onboarding = OnboardingPage()
@@ -42,7 +43,7 @@ class MainWindow(QMainWindow):
     @Slot(str, int, str)
     def _on_onboarding_complete(self, sex: str, age: int, patient_id: str):
         self.body_page.set_patient(sex, age, patient_id)
-        self.stack.setCurrentWidget(self.body_page)
+        self.stack.show_page(self.body_page)
 
     @Slot(str)
     def _on_region_selected(self, region: str):
@@ -50,10 +51,10 @@ class MainWindow(QMainWindow):
             self._open_dashboard()
         else:
             self.coming_soon.set_region(region)
-            self.stack.setCurrentWidget(self.coming_soon)
+            self.stack.show_page(self.coming_soon)
 
     def _open_dashboard(self):
-        self.stack.setCurrentWidget(self.dashboard)
+        self.stack.show_page(self.dashboard)
 
     def _back_to_body(self):
-        self.stack.setCurrentWidget(self.body_page)
+        self.stack.show_page(self.body_page)

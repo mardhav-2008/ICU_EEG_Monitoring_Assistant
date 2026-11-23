@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Signal, QThread
+from PySide6.QtCore import Qt, Signal, QThread
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QFileDialog, QLineEdit, QDoubleSpinBox, QFormLayout, QFrame,
+    QFileDialog, QLineEdit, QDoubleSpinBox, QGridLayout, QFrame,
+    QProgressBar,
 )
 
 from gui.services.inference_service import InferenceService
@@ -13,6 +14,7 @@ from gui.workers.inference_worker import InferenceWorker
 from gui.widgets.eeg_plot import EEGPlot
 from gui.widgets.spectrogram import SpectrogramWidget
 from gui.widgets.prediction_panel import PredictionPanel
+from gui.widgets.motion import PulseDot
 
 
 class EEGDashboardPage(QWidget):
@@ -25,100 +27,109 @@ class EEGDashboardPage(QWidget):
         self._worker = None
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 20, 24, 20)
+        layout.setContentsMargins(24, 18, 24, 16)
         layout.setSpacing(12)
 
         header = QHBoxLayout()
-        back = QPushButton("← Body map")
+        header.setSpacing(14)
+        back = QPushButton("←  Body map")
+        back.setObjectName("ghost")
+        back.setCursor(Qt.CursorShape.PointingHandCursor)
         back.clicked.connect(self.back_requested.emit)
         header.addWidget(back)
 
-        title = QLabel("BRAIN  /  EEG MONITORING")
+        title = QLabel("Brain  ·  EEG monitoring")
         title.setObjectName("sectionTitle")
         header.addWidget(title)
         header.addStretch()
-
-        research = QLabel("RESEARCH MODE · NOT FOR CLINICAL DECISIONS")
-        research.setObjectName("footnote")
-        header.addWidget(research)
         layout.addLayout(header)
 
         input_panel = QFrame()
         input_panel.setObjectName("panel")
         input_layout = QVBoxLayout(input_panel)
+        input_layout.setContentsMargins(22, 18, 22, 16)
+        input_layout.setSpacing(12)
 
-        input_title = QLabel("RECORDING INPUT")
-        input_title.setObjectName("fieldLabel")
+        input_title = QLabel("Recording input")
+        input_title.setObjectName("panelTitle")
         input_layout.addWidget(input_title)
 
-        form = QFormLayout()
+        grid = QGridLayout()
+        grid.setHorizontalSpacing(10)
+        grid.setVerticalSpacing(12)
+
         self.eeg_path = QLineEdit()
         self.eeg_path.setReadOnly(True)
         self.eeg_path.setPlaceholderText("Choose EEG .parquet file")
-        eeg_row = QHBoxLayout()
-        eeg_row.addWidget(self.eeg_path, 1)
         eeg_browse = QPushButton("Browse…")
         eeg_browse.clicked.connect(self._browse_eeg)
-        eeg_row.addWidget(eeg_browse)
-        form.addRow("EEG recording", eeg_row)
 
         self.spec_path = QLineEdit()
         self.spec_path.setReadOnly(True)
         self.spec_path.setPlaceholderText("Choose spectrogram .parquet file")
-        spec_row = QHBoxLayout()
-        spec_row.addWidget(self.spec_path, 1)
         spec_browse = QPushButton("Browse…")
         spec_browse.clicked.connect(self._browse_spectrogram)
-        spec_row.addWidget(spec_browse)
-        form.addRow("Spectrogram", spec_row)
 
-        offsets = QHBoxLayout()
-        self.eeg_offset = QDoubleSpinBox()
-        self.eeg_offset.setRange(0, 1_000_000)
-        self.eeg_offset.setDecimals(1)
-        self.eeg_offset.setSuffix(" s")
-        self.eeg_offset.setValue(0.0)
+        self.eeg_offset = self._offset_box()
+        self.spec_offset = self._offset_box()
 
-        self.spec_offset = QDoubleSpinBox()
-        self.spec_offset.setRange(0, 1_000_000)
-        self.spec_offset.setDecimals(1)
-        self.spec_offset.setSuffix(" s")
-        self.spec_offset.setValue(0.0)
+        grid.addWidget(self._row_label("EEG recording"), 0, 0)
+        grid.addWidget(self.eeg_path, 0, 1)
+        grid.addWidget(eeg_browse, 0, 2)
+        grid.addWidget(self._row_label("EEG offset"), 0, 3)
+        grid.addWidget(self.eeg_offset, 0, 4)
 
-        offsets.addWidget(QLabel("EEG offset"))
-        offsets.addWidget(self.eeg_offset)
-        offsets.addSpacing(16)
-        offsets.addWidget(QLabel("Spectrogram offset"))
-        offsets.addWidget(self.spec_offset)
-        offsets.addStretch()
-
-        form.addRow("Window offsets", offsets)
-        input_layout.addLayout(form)
+        grid.addWidget(self._row_label("Spectrogram"), 1, 0)
+        grid.addWidget(self.spec_path, 1, 1)
+        grid.addWidget(spec_browse, 1, 2)
+        grid.addWidget(self._row_label("Spectrogram offset"), 1, 3)
+        grid.addWidget(self.spec_offset, 1, 4)
+        grid.setColumnStretch(1, 1)
+        grid.setColumnMinimumWidth(3, 130)
 
         actions = QHBoxLayout()
+        actions.setSpacing(8)
+        self.status_dot = PulseDot("#8FA29A")
+        self.status = QLabel("Model not loaded")
+        self.status.setObjectName("statusText")
+        actions.addWidget(self.status_dot)
+        actions.addWidget(self.status)
+        actions.addStretch()
         self.run_button = QPushButton("Run inference  →")
         self.run_button.setObjectName("primary")
+        self.run_button.setMinimumWidth(180)
+        self.run_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.run_button.clicked.connect(self._run_inference)
         actions.addWidget(self.run_button)
 
-        self.status = QLabel("MODEL NOT LOADED")
-        self.status.setObjectName("statusText")
-        actions.addWidget(self.status)
-        actions.addStretch()
+        input_layout.addLayout(grid)
         input_layout.addLayout(actions)
+
+        self.busy = QProgressBar()
+        self.busy.setObjectName("busy")
+        self.busy.setRange(0, 0)
+        self.busy.setTextVisible(False)
+        self.busy.setVisible(False)
+        input_layout.addWidget(self.busy)
 
         layout.addWidget(input_panel)
 
-        cards = QHBoxLayout()
-        self.prediction = PredictionPanel()
-        cards.addWidget(self.prediction, 3)
-
+        # Signals on the left (spectrogram over EEG), the model's reading
+        # in a fixed-width column on the right.
+        content = QHBoxLayout()
+        content.setSpacing(12)
+        signals = QVBoxLayout()
+        signals.setSpacing(12)
         self.spectrogram = SpectrogramWidget()
-        cards.addWidget(self.spectrogram, 2)
-        layout.addLayout(cards, 2)
-
+        signals.addWidget(self.spectrogram, 2)
         self.eeg = EEGPlot()
-        layout.addWidget(self.eeg, 3)
+        signals.addWidget(self.eeg, 3)
+        content.addLayout(signals, 1)
+
+        self.prediction = PredictionPanel()
+        self.prediction.setFixedWidth(420)
+        content.addWidget(self.prediction)
+        layout.addLayout(content, 1)
 
         note = QLabel(
             "Inputs are processed by the repository's existing multimodal "
@@ -126,6 +137,29 @@ class EEGDashboardPage(QWidget):
         )
         note.setObjectName("footnote")
         layout.addWidget(note)
+
+    @staticmethod
+    def _row_label(text):
+        label = QLabel(text)
+        label.setObjectName("fieldLabel")
+        label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        return label
+
+    @staticmethod
+    def _offset_box():
+        box = QDoubleSpinBox()
+        box.setRange(0, 1_000_000)
+        box.setDecimals(1)
+        box.setSuffix(" s")
+        box.setValue(0.0)
+        box.setFixedWidth(110)
+        box.lineEdit().setTextMargins(10, 0, 0, 0)
+        return box
+
+    def _set_running(self, running, text, color):
+        self.status.setText(text)
+        self.status_dot.set_state(color, active=running)
+        self.busy.setVisible(running)
 
     def _browse_eeg(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -162,8 +196,8 @@ class EEGDashboardPage(QWidget):
             return
 
         self.run_button.setEnabled(False)
-        self.prediction.set_status("RUNNING INFERENCE…")
-        self.status.setText("● MODEL RUNNING")
+        self.prediction.set_status("Running inference…")
+        self._set_running(True, "Model running", "#D2B77B")
         self.eeg.clear()
         self.spectrogram.clear()
 
@@ -195,13 +229,13 @@ class EEGDashboardPage(QWidget):
             result["eeg_offset_seconds"],
         )
         self.spectrogram.set_spectrogram(result["spectrogram"])
-        self.status.setText(
-            f"● INFERENCE COMPLETE · {result['device'].upper()}"
+        self._set_running(
+            False, f"Inference complete  ·  {result['device']}", "#A7C9A8"
         )
 
     def _on_inference_failed(self, message):
         self.prediction.set_error(message)
-        self.status.setText("● INFERENCE ERROR")
+        self._set_running(False, "Inference error", "#F0A18E")
 
     def _on_thread_finished(self):
         self.run_button.setEnabled(True)
